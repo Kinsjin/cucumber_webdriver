@@ -34,18 +34,21 @@ public class ShareDriver extends EventFiringWebDriver {
 
         if ("firefox".equalsIgnoreCase(config.get("browser"))) {
             browser = DesiredCapabilities.firefox();
-        } else {
+        } else if ("chrome".equalsIgnoreCase(config.get("chrome"))){
             browser = DesiredCapabilities.chrome();
-        }
+        }else
+            browser = DesiredCapabilities.internetExplorer();
         browser.setJavascriptEnabled(true);
 
-//        try {
-//            REAL_DRIVER = new RemoteWebDriver(new URL(config.get("selenium_server_url")), browser);
+        if("true".equalsIgnoreCase(config.get("true")))
+
+        try {
+            REAL_DRIVER = new RemoteWebDriver(new URL(config.get("selenium_server_url")), browser);
             System.setProperty("webdriver.chrome.driver","C:\\Users\\dingfan\\IdeaProjects\\Cucumber_WebDriver\\src\\test\\resources\\webDriver\\chromedriver.exe");
             REAL_DRIVER = new ChromeDriver();
-//        } catch (MalformedURLException exceptions) {
-//
-//        }
+        } catch (MalformedURLException exceptions) {
+
+        }
     }
 
     public ShareDriver() {
