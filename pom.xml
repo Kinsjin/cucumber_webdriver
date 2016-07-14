@@ -73,6 +73,11 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
+        <dependency>
+            <groupId>org.openqa.selenium.core</groupId>
+            <artifactId>selenium-core</artifactId>
+            <version>1.0-20080914.225453</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

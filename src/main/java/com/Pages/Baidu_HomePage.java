@@ -1,4 +1,4 @@
-package com;
+package com.Pages;
 
 /**
  * Created by dingfan on 2016/7/5.

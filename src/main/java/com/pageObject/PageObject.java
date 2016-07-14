@@ -5,9 +5,10 @@ import org.apache.log4j.Logger;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.server.SeleniumDriverResourceHandler;
 import util.Log;
 
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Created by dingfan on 2016/7/13.
@@ -26,11 +27,28 @@ public abstract class PageObject {
     public PageObject(WebDriver driver){
         this.driver = driver;
     }
-    public void verifyPageElements(String pagename) throws IOException{
-        Log.info("\n" + Strings.repeat("*",20) + pagename + Strings.repeat("*",20));
-        long pageloadingtime = getPageLoadTime();
-    }
+    public void pageFullyLoaded(){
 
+    }
+    public void openPage(){}
+    public void pageRefresh(){}
+    public void getCurrentURL(){}
+    public void switchWindow(){}
+    public void scrollToView(){}
+    public void innerHtmlCode(){}
+    public void performanceLoadingTime(){}
+    public void waitProcessBarNotAppeared(){}
+    public void clickWithJS(){}
+    public void highLight(){}
+    public void waitForObjectDisplay(){}
+    public void modifyElement(){}
+    public void alertClickOK(){}
+    public void alertClickCancel(){}
+    public void getPageTittle(){}
+    public void uploadFile(){}
+    public void downloadFile(){}
+    public void sleepSecond(){}
+    public void waitForAjaxPresent(){}
     public long getPageLoadTime() {
         long pageloadtime = 0;
         long pagestarttime = 0;
@@ -44,21 +62,20 @@ public abstract class PageObject {
         if(startobject instanceof Double){
             Double tempvalue=(Double) startobject;
             pagestarttime=new Double(tempvalue).longValue();
-            logger.debug("the page navigate start time is:"+pagestarttime);
+            Log.debug("the page navigate start time is:"+pagestarttime);
         }
         if(endobject instanceof Long){
             pageendtime=((Long) endobject);
-            logger.debug("the page end time is:"+pageendtime);
+            Log.debug("the page end time is:"+pageendtime);
         }
         if(endobject instanceof Double){
             double tempvalue=(Double) endobject;
             pageendtime=new Double(tempvalue).longValue();
-            logger.debug("the page end time is:"+pageendtime);
+            Log.debug("the page end time is:"+pageendtime);
         }
 
         pageloadtime=(pageendtime-pagestarttime)/1000;
-        logger.info("Get current page loading time is:"+pageloadtime);
-
+        Log.info("Get current page loading time is:"+pageloadtime);
         return pageloadtime;
     }
 
@@ -66,12 +83,12 @@ public abstract class PageObject {
      * executeJS:(execute the java script in this page).
 
      * @author huchan
-     * @param driver -- the web driver's instance
+//     * @param driver -- the web driver's instance
      * @param script  --the java script we need to execute
      * @since JDK 1.6
      */
     public Object executeJS(String script) {
-        logger.info("Run the javascript from page ,the java script is:"
+        Log.info("Run the javascript from page ,the java script is:"
                 + script);
         JavascriptExecutor je = (JavascriptExecutor) driver;
         return je.executeScript(script);
