@@ -119,13 +119,13 @@ public class ShareDriver extends EventFiringWebDriver {
         }
         super.close();
     }
-
-    @Before
     public void deleteAllCookies() {
         REAL_DRIVER.manage().deleteAllCookies();
     }
 
-    @After
+    public WebDriver getRealDriver(){
+        return REAL_DRIVER;
+    }
     public void embedScreenshot(Scenario scenario) {
         try {
             byte[] screenshot = getScreenshotAs(OutputType.BYTES);
