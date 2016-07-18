@@ -6,6 +6,7 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.server.SeleniumDriverResourceHandler;
 import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import util.Log;
 
@@ -18,6 +19,7 @@ import java.util.Set;
  */
 public abstract class PageObject {
     public WebDriver driver = null;
+    Actions actions;
     public PageObject(WebDriver driver){
         this.driver = driver;
     }
@@ -68,8 +70,8 @@ public abstract class PageObject {
     }
     public void forceToRefresh(){
         Log.info("Force to refresh..............................................................");
-        Actions action = new Actions(driver);
-        action.keyDown(Keys.CONTROL).sendKeys(Keys.F5).perform();
+        this.actions = new Actions(driver);
+        actions.keyDown(Keys.CONTROL).sendKeys(Keys.F5).perform();
     }
     public void executJStoRefresh(){
         Log.info("Refresh page....................................................................");
@@ -105,24 +107,179 @@ public abstract class PageObject {
         driver.switchTo().window(winHandle);
         Log.info("Current page title is: " + driver.getTitle());
     }
-    public void scrollToView(){
-
+    public void scrollToBottom(){
+        ((JavascriptExecutor)driver).executeScript("window.scrollTo(0,document.body.scrollHeight)");
+        Log.info("Scroll to the bottom of the page..................................................");
     }
-    public void innerHtmlCode(){}
-    public void performanceLoadingTime(){}
-    public void waitProcessBarNotAppeared(){}
-    public void clickWithJS(){}
-    public void highLight(){}
-    public void waitForObjectDisplay(){}
+    public void scrollTo(int x, int y){
+        ((JavascriptExecutor)driver).executeScript("window.scrollTo("+ x +","+ y + ")");
+        Log.info("Scroll to the element location...............................................");
+    }
+    public void scrollBy(int x, int y){
+        ((JavascriptExecutor)driver).executeScript("window.scrollBy("+ x +","+ y + ")");
+        Log.info("Scroll by " + x + " pixel and " + y + " pixel in Horizontal and Vertical directory");
+    }
+    public void scrollToView(WebElement ele){
+        ((JavascriptExecutor)driver).executeScript("arguments[0].scrollIntoView();",ele);
+        //the same as arguments[0].scrollInoview(true)
+        Log.info("Scroll and make the " + ele + " to view.......................................");
+    }
+    public String getInnerHtmlCode(WebElement e){
+        String contents = (String)executeJSReturn("return arguments[0].innerHTML;", e);
+        Log.info("Get the html code for this webelement:"+contents);
+        highLight(e);
+        return contents;
+    }
+    public boolean waitProcessBarNotAppeared(WebElement e){
+        int waitcount = 0;
+        boolean isDisplayed = false;
+        while (e.isDisplayed()) {
+            waitcount = waitcount + 1;
+            isDisplayed = e.isDisplayed();
+            Log.info("Waitting for the object displayed status-the load object displayed status is:"
+                    + isDisplayed);
+            sleepSeconds(3);
+            if (waitcount == 5) {
+                Log.error("Waitting for the object displayed status-the object cannot show in the page:"
+                        + e.getTagName() + ",exit the identify the object ");
+                break;
+            }
+
+        }
+        return isDisplayed;
+    }
+    public void clickWithJS(WebElement e){
+        if(driver instanceof JavascriptExecutor && e.isEnabled()&& e.isDisplayed()){
+            ((JavascriptExecutor)driver).executeScript("argument[0].click();",e);
+        }
+        highLight(e);
+    }
+    public void highLight(WebElement ele){
+        if(driver instanceof JavascriptExecutor) {
+            for(int i=0; i<2; i++){;
+                JavascriptExecutor je = (JavascriptExecutor) driver;
+                je.executeScript("arguments[0].setAttribute('style', arguments[1]);", ele, "color: yellow; border: 2px solid yellow;");//亮
+                je.executeScript("arguments[0].setAttribute('style', arguments[1]);", ele, ""); //暗
+            }
+        }
+    }
+    public void highLight(WebDriver driver, WebElement ele) {
+        for (int i = 0; i < 2; i++) {
+            JavascriptExecutor js = (JavascriptExecutor) driver;
+            js.executeScript("arguments[0].setAttribute('style', arguments[1]);", ele, "color: yellow; border: 2px solid yellow;");//亮
+            js.executeScript("arguments[0].setAttribute('style', arguments[1]);", ele, ""); //暗
+        }
+        Log.info("High light the element...........................................................");
+    }
+    public boolean waitForObjectDisplay(final String xpathExpression){
+        boolean findobject=false;
+        WebDriverWait wait=new WebDriverWait(driver, 120);
+        try{
+            wait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
+                    Log.info("Enter the waitForObjectDisplay method to wait for the object displayed in the page ");
+                    return (driver.findElement(By.xpath(xpathExpression)).isDisplayed());
+                }
+            });
+            findobject=true;
+        }
+        catch(TimeoutException te){
+            Log.info("throw expection ,cannot find the web element:"+te.getMessage());
+            Log.info("the time out is 120 ,we cannot find this webelment:"+xpathExpression);
+//            Assert.fail("Cannot find this web element in the page:"+xpathExpression);
+        }
+
+        return findobject;
+    }
     public void modifyElement(){}
-    public void alertClickOK(){}
-    public void alertClickCancel(){}
+    public boolean alertClickOK(int seconds){
+        boolean isclicked=false;
+        WebDriverWait wait=new WebDriverWait(driver, seconds);
+        try{
+            Alert alert=wait.until(ExpectedConditions.alertIsPresent());
+//            driver.switchTo().alert();
+            Log.info("Pop up Alert text is:"+alert.getText());
+            alert.accept();
+            isclicked=true;
+        }catch(NoAlertPresentException e){
+            Log.info("the Alert didn't pop up currently:"+e.getMessage());
+        }catch(TimeoutException e){
+            Log.error("Time out we cannot find this OK button:"+seconds);
+        }
+        return isclicked;
+    }
+    public boolean alertClickCancel(int seconds){
+        boolean isclicked=false;
+        WebDriverWait wait=new WebDriverWait(driver, seconds);
+        try{
+            Alert alert=wait.until(ExpectedConditions.alertIsPresent());
+//            driver.switchTo().alert();
+            Log.info("Pop up Alert text is:"+alert.getText());
+            alert.dismiss();
+            isclicked=true;
+        }catch(NoAlertPresentException e){
+            Log.info("the alert didn't pop up currently:"+e.getMessage());
+        }
+        catch(TimeoutException e){
+            Log.error("Time out we cannot find this Cancel button:"+seconds);
+        }
+
+        return isclicked;
+    }
     public void getPageTittle(){}
     public void uploadFile(){}
     public void downloadFile(){}
-    public void sleepSecond(){}
-    public void waitForAjaxPresent(){}
-    public void dragPageElement(WebElement ele){
+    public void sleepSeconds(int seconds){
+        Log.info("Begin to sleep current step for " + seconds
+                + " seconds........");
+        //You need to be in a synchronized block in order for Object.wait() to work.
+
+        //Also, I recommend looking at the concurrency packages instead of the old school threading packages. They are safer and way easier to work with.
+        //synchronized (driver)
+        //    {
+        //    driver.wait(seconds * 1000);
+        //    }
+        try {
+            Thread.sleep(seconds*1000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            Log.error("Sleep current step met an error:"+e.getMessage());
+        }
+    }
+    public void waitForAjaxPresent(int timeoutInSeconds){
+        if (driver instanceof JavascriptExecutor) {
+            final long currentbowserstate=(Long)executeJS("return return jQuery.active;");
+            Log.info("Current ajax active code  is:"+ currentbowserstate);
+            WebDriverWait wdw=new WebDriverWait(driver, timeoutInSeconds);
+            ExpectedCondition<Boolean> ec=new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
+                    // TODO Auto-generated method stub
+                    long newpagestate=(Long) executeJS("return return jQuery.active;");
+                    Log.debug("the new ajax active code is:"+newpagestate);
+                    return (newpagestate==0L);
+                }
+            };
+
+            boolean loaded=wdw.until(ec);
+            Log.debug("finally the ajax had been loaded status is:"+loaded);
+        }
+        else{
+            Log.error("Web driver: " + driver + " cannot execute javascript");
+        }
+
+    }
+    public void dragPageElement(WebElement ele,int x,int y){
+        this.actions = new Actions(driver);
+        for(int i=0;i<x; i++){
+            actions.dragAndDropBy(ele,0,10).build().perform();
+        }
+        Log.info("Drag and drop element in Horizontal directory by" + x*10 + "pixel");
+        for(int i=0;i<y; i++){
+            actions.dragAndDropBy(ele,10,0).build().perform();
+            Log.info("Drag and drop element in Vertical directory by" + x*10 + "pixel");
+        }
     }
     public long getPageLoadTime() {
         long pageloadtime = 0;
